@@ -1,70 +1,80 @@
 // El principal objetivo de este desafío es fortalecer tus habilidades en lógica de programación. Aquí deberás desarrollar la lógica para resolver el problema.
-
-// Lista (array) donde guardaremos los nombres
+// Lista (array) y apoyo para evitar duplicados
 const amigos = [];
-// Para validar duplicados de forma insensible a mayúsculas
 const amigosSetLower = new Set();
 
-// Utilidad: referencias a elementos del DOM
-const $input = () => document.getElementById("amigo");
-const $lista = () => document.getElementById("listaAmigos");
-const $resultado = () => document.getElementById("resultado");
+// Accesos rápidos
+const $ = (id) => document.getElementById(id);
+const $input = () => $("amigo");
+const $ulLista = () => $("listaAmigos");
+const $ulResultado = () => $("resultado");
+const $btnSortear = () => $("btnSortear");
+const $btnLimpiar = () => $("btnLimpiar");
 
-// --------- Funciones principales que pide el HTML ---------
+// Render inicial de estados
+document.addEventListener("DOMContentLoaded", () => {
+  mensajeSinNombres();
+  actualizarEstadoBotones();
+
+  // Enter para añadir
+  $input().addEventListener("keydown", (e) => {
+    if (e.key === "Enter") agregarAmigo();
+  });
+});
+
+// ========== Funciones principales ==========
 
 function agregarAmigo() {
-  // 1) Tomamos el texto y lo limpiamos
   const nombre = ($input().value || "").trim();
-
-  // 2) Validaciones con condicionales
   if (!nombre) {
-    mostrarMensaje("Por favor, escribe un nombre antes de añadir.");
+    mostrarResultado("Escribe un nombre antes de añadir.");
     return;
   }
 
-  const claveLower = nombre.toLowerCase();
-  if (amigosSetLower.has(claveLower)) {
-    mostrarMensaje("Ese nombre ya fue ingresado. Evitemos duplicados ✅");
+  const key = nombre.toLowerCase();
+  if (amigosSetLower.has(key)) {
+    mostrarResultado("Ese nombre ya existe. Evitemos duplicados ✅");
     return;
   }
 
-  // 3) Agregar a la lista
   amigos.push(nombre);
-  amigosSetLower.add(claveLower);
-
-  // 4) Actualizar la vista (lista de nombres) y limpiar el input
-  renderListaAmigos();
+  amigosSetLower.add(key);
   $input().value = "";
-  $input().focus();
+  renderLista();
   limpiarResultado();
+  actualizarEstadoBotones();
 }
 
 function sortearAmigo() {
-  // Si no hay suficientes nombres, avisamos
   if (amigos.length === 0) {
-    mostrarMensaje("No hay nombres para sortear. Agrega al menos uno.");
+    mensajeSinNombres();
     return;
   }
 
-  // Elegimos un índice aleatorio
-  const indice = Math.floor(Math.random() * amigos.length);
-  // Para evitar repetir ganadores en sorteos sucesivos, lo quitamos del array
-  const ganador = amigos.splice(indice, 1)[0];
+  const idx = Math.floor(Math.random() * amigos.length);
+  const ganador = amigos.splice(idx, 1)[0];
   amigosSetLower.delete(ganador.toLowerCase());
 
-  // Mostramos el resultado y refrescamos la lista visible
+  renderLista();
   mostrarResultado(`🎉 El amigo secreto sorteado es: <strong>${ganador}</strong>`);
-  renderListaAmigos();
+  actualizarEstadoBotones();
 }
 
-// --------- Utilidades de interfaz ---------
+// NUEVO: eliminar todos los nombres
+function limpiarAmigos() {
+  if (amigos.length === 0) return;
+  amigos.length = 0;
+  amigosSetLower.clear();
+  renderLista();
+  mensajeSinNombres();
+  actualizarEstadoBotones();
+}
 
-function renderListaAmigos() {
-  // Limpiamos la UL
-  const ul = $lista();
+// ========== Utilidades de interfaz ==========
+
+function renderLista() {
+  const ul = $ulLista();
   ul.innerHTML = "";
-
-  // Recorremos el array para crear <li> (usa lazo de repetición)
   for (let i = 0; i < amigos.length; i++) {
     const li = document.createElement("li");
     li.textContent = `• ${amigos[i]}`;
@@ -72,13 +82,8 @@ function renderListaAmigos() {
   }
 }
 
-function mostrarMensaje(texto) {
-  // Muestra mensajes informativos en la zona de resultado
-  mostrarResultado(texto);
-}
-
 function mostrarResultado(html) {
-  const ul = $resultado();
+  const ul = $ulResultado();
   ul.innerHTML = "";
   const li = document.createElement("li");
   li.innerHTML = html;
@@ -86,17 +91,15 @@ function mostrarResultado(html) {
 }
 
 function limpiarResultado() {
-  $resultado().innerHTML = "";
+  $ulResultado().innerHTML = "";
 }
 
-// --------- Mejora de usabilidad: Enter agrega ---------
-document.addEventListener("DOMContentLoaded", () => {
-  const input = $input();
-  if (input) {
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        agregarAmigo();
-      }
-    });
-  }
-});
+function mensajeSinNombres() {
+  mostrarResultado("No hay nombres para sortear. Agrega al menos uno.");
+}
+
+function actualizarEstadoBotones() {
+  const vacío = amigos.length === 0;
+  $btnSortear().disabled = vacío;
+  $btnLimpiar().disabled = vacío;
+}
