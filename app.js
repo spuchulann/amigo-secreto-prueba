@@ -1,5 +1,6 @@
 // El principal objetivo de este desafío es fortalecer tus habilidades en lógica de programación. Aquí deberás desarrollar la lógica para resolver el problema.
-// Lista (array) y apoyo para evitar duplicados
+
+// Almacenamiento y control de duplicados (case-insensitive)
 const amigos = [];
 const amigosSetLower = new Set();
 
@@ -11,29 +12,24 @@ const $ulResultado = () => $("resultado");
 const $btnSortear = () => $("btnSortear");
 const $btnLimpiar = () => $("btnLimpiar");
 
-// Render inicial de estados
+// Estado inicial
 document.addEventListener("DOMContentLoaded", () => {
   mensajeSinNombres();
   actualizarEstadoBotones();
-
   // Enter para añadir
   $input().addEventListener("keydown", (e) => {
     if (e.key === "Enter") agregarAmigo();
   });
 });
 
-// ========== Funciones principales ==========
-
+// --- Funciones principales ---
 function agregarAmigo() {
   const nombre = ($input().value || "").trim();
-  if (!nombre) {
-    mostrarResultado("Escribe un nombre antes de añadir.");
-    return;
-  }
+  if (!nombre) { mostrarResultado("Escribe un nombre antes de añadir."); return; }
 
   const key = nombre.toLowerCase();
   if (amigosSetLower.has(key)) {
-    mostrarResultado("Ese nombre ya existe. Evitemos duplicados ✅");
+    mostrarResultado("Ese nombre ya fue ingresado. Evitemos duplicados ✅");
     return;
   }
 
@@ -46,10 +42,7 @@ function agregarAmigo() {
 }
 
 function sortearAmigo() {
-  if (amigos.length === 0) {
-    mensajeSinNombres();
-    return;
-  }
+  if (amigos.length === 0) { mensajeSinNombres(); return; }
 
   const idx = Math.floor(Math.random() * amigos.length);
   const ganador = amigos.splice(idx, 1)[0];
@@ -60,7 +53,6 @@ function sortearAmigo() {
   actualizarEstadoBotones();
 }
 
-// NUEVO: eliminar todos los nombres
 function limpiarAmigos() {
   if (amigos.length === 0) return;
   amigos.length = 0;
@@ -70,8 +62,7 @@ function limpiarAmigos() {
   actualizarEstadoBotones();
 }
 
-// ========== Utilidades de interfaz ==========
-
+// --- Utilidades UI ---
 function renderLista() {
   const ul = $ulLista();
   ul.innerHTML = "";
@@ -99,7 +90,7 @@ function mensajeSinNombres() {
 }
 
 function actualizarEstadoBotones() {
-  const vacío = amigos.length === 0;
-  $btnSortear().disabled = vacío;
-  $btnLimpiar().disabled = vacío;
+  const vacio = amigos.length === 0;
+  $btnSortear().disabled = vacio;
+  $btnLimpiar().disabled = vacio;
 }
